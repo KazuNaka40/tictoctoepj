@@ -1,5 +1,7 @@
 const squares = document.querySelectorAll('.square');
 const squaresArray = [].slice.call(squares);
+     
+
 
 let flag = true;
 let counter = 9;
