@@ -1,3 +1,6 @@
+import io from "socket.io-client";
+import $ from "jquery";
+
 const squares = document.querySelectorAll(".square");
 
 let flag = true;
@@ -112,4 +115,13 @@ function initGame() {
 
 resetBtn?.addEventListener("click", () => {
   initGame();
+});
+
+const url = "localhost:3000";
+
+const socket = io.connect(url);
+
+//サーバから受け取るイベントを作成
+socket.on("sendMessageToClient", function (data: string) {
+  $("#msg_list").prepend("<li>" + data + "</li>");
 });
