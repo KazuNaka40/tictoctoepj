@@ -1,40 +1,54 @@
 import io from "socket.io-client";
 import $ from "jquery";
 
+const url = "localhost:3000";
+const socket = io.connect(url);
+
+//サーバから受け取るイベントを作成
+socket.on("sendMessageToClient", function (data: string) {
+  $("#msg_list").prepend("<li>" + data + "</li>");
+});
+
 const squares = document.querySelectorAll(".square");
 
 let flag = true;
 let counter = 9;
 
-squares.forEach((square) => {
+squares.forEach((square, position: number) => {
   square.addEventListener("click", () => {
-    if (flag) {
-      square.classList.add("js-maru-checked");
-      square.classList.add("js-unclickable");
-      if (isWinner("maru")) {
-        setMessage("maru-win");
-        gameOver();
-        return;
-      }
-      setMessage("batsu-turn");
-      flag = false;
-    } else {
-      square.classList.add("js-batsu-checked");
-      square.classList.add("js-unclickable");
-      if (isWinner("batsu")) {
-        setMessage("batsu-win");
-        gameOver();
-        return;
-      }
-      setMessage("maru-turn");
-      flag = true;
-    }
-    counter--;
-    if (counter === 0) {
-      setMessage("draw");
-      gameOver();
-    }
+    socket.emit("clicked", position);
   });
+});
+
+socket.on("clickedAll", (position: number, id: string) => {
+  const square = squares[position];
+  if (flag) {
+    square.classList.add("js-maru-checked");
+    square.classList.add("js-unclickable");
+    if (isWinner("maru")) {
+      setMessage("maru-win");
+      gameOver();
+      return;
+    }
+    setMessage("batsu-turn");
+    flag = false;
+  } else {
+    square.classList.add("js-batsu-checked");
+    square.classList.add("js-unclickable");
+    if (isWinner("batsu")) {
+      setMessage("batsu-win");
+      gameOver();
+      return;
+    }
+    setMessage("maru-turn");
+    flag = true;
+  }
+  counter--;
+  if (counter === 0) {
+    setMessage("draw");
+    gameOver();
+  }
+  $("#msg_list").prepend("<li>" + position + " " + id + "</li>");
 });
 
 const messages = document.querySelectorAll(".message-list li");
@@ -110,18 +124,12 @@ function initGame() {
     square.classList.remove("js-highLight");
   });
   setMessage("maru-turn");
-  resetBtn?.classList.add("js-hidden");
 }
 
 resetBtn?.addEventListener("click", () => {
-  initGame();
+  socket.emit("initGame");
 });
 
-const url = "localhost:3000";
-
-const socket = io.connect(url);
-
-//サーバから受け取るイベントを作成
-socket.on("sendMessageToClient", function (data: string) {
-  $("#msg_list").prepend("<li>" + data + "</li>");
+socket.on("reset", () => {
+  initGame();
 });

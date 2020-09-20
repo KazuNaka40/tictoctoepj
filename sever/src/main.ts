@@ -1,8 +1,34 @@
 import express from "express";
 import socketio from "socket.io";
 
+//ここでまってるよ、リッスン//
 const io = socketio(3000);
 
+const players: string[] = [];
+let turn = 0;
+
 io.on("connection", (socket: socketio.Socket) => {
-  io.emit("sendMessageToClient", "1人入室しました。");
+  if (players.length >= 2) {
+    socket.disconnect(true);
+    console.log("disconnect");
+    return;
+  }
+  players.push(socket.id);
+  console.log(players);
+  io.emit("sendMessageToClient", socket.id);
+  socket.on("clicked", (position: number) => {
+    if (socket.id == players[turn % 2]) {
+      io.emit("clickedAll", position, socket.id);
+      console.log(position, socket.id);
+      turn++;
+    }
+  });
+  socket.on("initGame", () => {
+    reset(io);
+  });
 });
+
+function reset(server: socketio.Server) {
+  server.emit("reset");
+  turn = 0;
+}
