@@ -1,10 +1,22 @@
 import io from "socket.io-client";
 import $ from "jquery";
+import { v4 as uuidv4 } from "uuid";
+
+let userID = sessionStorage.getItem("userID");
+
+if (userID == null) {
+  userID = uuidv4();
+  sessionStorage.setItem("userID", userID);
+}
+
+console.log(userID);
 
 const url = "localhost:3000";
 const socket = io.connect(url);
 
 //サーバから受け取るイベントを作成
+socket.emit("userID", userID);
+
 socket.on("sendMessageToClient", function (data: string) {
   $("#msg_list").prepend("<li>" + data + "</li>");
 });
@@ -13,7 +25,7 @@ const squares = document.querySelectorAll(".square");
 
 squares.forEach((square, position: number) => {
   square.addEventListener("click", () => {
-    socket.emit("clicked", position);
+    socket.emit("clicked", position, userID);
   });
 });
 
