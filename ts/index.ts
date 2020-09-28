@@ -11,45 +11,48 @@ socket.on("sendMessageToClient", function (data: string) {
 
 const squares = document.querySelectorAll(".square");
 
-let flag = true;
-let counter = 9;
-
 squares.forEach((square, position: number) => {
   square.addEventListener("click", () => {
     socket.emit("clicked", position);
   });
 });
 
-socket.on("clickedAll", (position: number, id: string) => {
-  const square = squares[position];
-  if (flag) {
-    square.classList.add("js-maru-checked");
-    square.classList.add("js-unclickable");
+socket.on(
+  "clickedAll",
+  (position: number, id: string, board: number[], turn: number) => {
+    $("#msg_list").prepend("<li>" + board + "</li>");
+    squares.forEach((square, position: number) => {
+      if (board[position] == 0) {
+        squares[position].classList.add("js-maru-checked");
+      } else if (board[position] == 1) {
+        squares[position].classList.add("js-batsu-checked");
+      }
+    });
     if (isWinner("maru")) {
       setMessage("maru-win");
       gameOver();
       return;
     }
-    setMessage("batsu-turn");
-    flag = false;
-  } else {
-    square.classList.add("js-batsu-checked");
-    square.classList.add("js-unclickable");
     if (isWinner("batsu")) {
       setMessage("batsu-win");
       gameOver();
       return;
     }
-    setMessage("maru-turn");
-    flag = true;
+    if (!board.includes(-1)) {
+      setMessage("draw");
+      gameOver();
+      return;
+    }
+
+    if (turn % 2 == 1) {
+      setMessage("batsu-turn");
+    } else {
+      setMessage("maru-turn");
+    }
+
+    $("#msg_list").prepend("<li>" + position + " " + id + "</li>");
   }
-  counter--;
-  if (counter === 0) {
-    setMessage("draw");
-    gameOver();
-  }
-  $("#msg_list").prepend("<li>" + position + " " + id + "</li>");
-});
+);
 
 const messages = document.querySelectorAll(".message-list li");
 
@@ -114,8 +117,6 @@ let gameOver = () => {
 };
 
 function initGame() {
-  flag = true;
-  counter = 9;
   winningLine = null;
   squares.forEach((square) => {
     square.classList.remove("js-maru-checked");
