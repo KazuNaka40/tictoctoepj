@@ -10,17 +10,15 @@ let board = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 io.on("connection", (socket: socketio.Socket) => {
   socket.on("clicked", (position: number, userID: string) => {
-    if (userID == Array.from(players)[turn % 2]) {
-      io.emit("clickedAll", position, socket.id);
-      console.log(position, socket.id);
-      turn++;
+    if (userID !== Array.from(players)[turn % 2]) {
+      return;
     }
     if (board[position] !== -1) {
       return;
     }
     board[position] = turn % 2;
     turn++;
-    io.emit("clickedAll", position, socket.id, board, turn);
+    io.emit("clickedAll", board, turn);
     console.log(position, socket.id);
   });
   socket.on("initGame", () => {
@@ -34,6 +32,7 @@ io.on("connection", (socket: socketio.Socket) => {
       return;
     }
     players.add(userID);
+    io.emit("clickedAll", board, turn);
   });
 });
 

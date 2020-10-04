@@ -29,42 +29,37 @@ squares.forEach((square, position: number) => {
   });
 });
 
-socket.on(
-  "clickedAll",
-  (position: number, id: string, board: number[], turn: number) => {
-    $("#msg_list").prepend("<li>" + board + "</li>");
-    squares.forEach((square, position: number) => {
-      if (board[position] == 0) {
-        squares[position].classList.add("js-maru-checked");
-      } else if (board[position] == 1) {
-        squares[position].classList.add("js-batsu-checked");
-      }
-    });
-    if (isWinner("maru")) {
-      setMessage("maru-win");
-      gameOver();
-      return;
+socket.on("clickedAll", (board: number[], turn: number) => {
+  $("#msg_list").prepend("<li>" + board + "</li>");
+  squares.forEach((square, position: number) => {
+    if (board[position] == 0) {
+      squares[position].classList.add("js-maru-checked");
+    } else if (board[position] == 1) {
+      squares[position].classList.add("js-batsu-checked");
     }
-    if (isWinner("batsu")) {
-      setMessage("batsu-win");
-      gameOver();
-      return;
-    }
-    if (!board.includes(-1)) {
-      setMessage("draw");
-      gameOver();
-      return;
-    }
-
-    if (turn % 2 == 1) {
-      setMessage("batsu-turn");
-    } else {
-      setMessage("maru-turn");
-    }
-
-    $("#msg_list").prepend("<li>" + position + " " + id + "</li>");
+  });
+  if (isWinner("maru")) {
+    setMessage("maru-win");
+    gameOver();
+    return;
   }
-);
+  if (isWinner("batsu")) {
+    setMessage("batsu-win");
+    gameOver();
+    return;
+  }
+  if (!board.includes(-1)) {
+    setMessage("draw");
+    gameOver();
+    return;
+  }
+
+  if (turn % 2 == 1) {
+    setMessage("batsu-turn");
+  } else {
+    setMessage("maru-turn");
+  }
+});
 
 const messages = document.querySelectorAll(".message-list li");
 
